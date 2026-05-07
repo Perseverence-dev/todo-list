@@ -1,6 +1,6 @@
 import TodoListItem from "./TodoListItem";
 
-function TodoList(todoList) {
+function TodoList({todoList}) {
 
   return (
     <>
