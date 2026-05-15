@@ -10,11 +10,7 @@ function TodoForm({ onAddTodo }) {
     // Prevent the form from refreshing the whole page.
     event.preventDefault();
 
-    console.log('Event object:', event);
-    console.log('Event target:', event.target);
-    console.log('Input value:', event.target.todoTitle.value);
-
-     // Get the input value using the input name: todoTitle
+    // Get the input value using the input name: todoTitle
     // trim() removes extra spaces from the start and end.
     const todoTitle = event.target.todoTitle.value.trim();
 
