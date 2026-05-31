@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import TextInputWithLabel from '../../shared/TextInputWithLabel';
-import { isValidTodoTitle } from '../../utils/todoValidation';
+import TextInputWithLabel from '../../../shared/TextInputWithLabel';
+import { isValidTodoTitle } from '../../../utils/todoValidation';
 
 function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
+  // Tracks whether this item is currently being edited.
   const [isEditing, setIsEditing] = useState(false);
+
+  // Local edit state prevents changes from saving until Update is clicked.
   const [workingTitle, setWorkingTitle] = useState(todo.title);
 
   function startEditing() {
@@ -58,11 +61,7 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
               Cancel
             </button>
 
-            <button
-              type="button"
-              onClick={handleUpdate}
-              disabled={!isValidTodoTitle(workingTitle)}
-            >
+            <button type="submit" disabled={!isValidTodoTitle(workingTitle)}>
               Update
             </button>
           </>
@@ -77,7 +76,13 @@ function TodoListItem({ todo, onCompleteTodo, onUpdateTodo }) {
               />
             </label>
 
-            <span onClick={startEditing}>{todo.title}</span>
+            <span
+              onClick={startEditing}
+              style={{ cursor: 'pointer', marginLeft: '0.5rem' }}
+              title="Click to edit todo"
+            >
+              {todo.title}
+            </span>
           </>
         )}
       </form>

@@ -1,59 +1,28 @@
 import './App.css';
 import { useState } from 'react';
-import TodoList from './features/TodoList/TodoList';
-import TodoForm from './features/TodoForm';
+import Header from './shared/Header';
+import Logon from './features/Logon';
+import TodosPage from './features/Todos/TodosPage';
 
 function App() {
-  // Stores all todos for the application.
-  const [todoList, setTodoList] = useState([]);
-
-  function addTodo(todoTitle) {
-    const trimmedTitle = todoTitle.trim();
-
-    // Prevent empty or whitespace-only todos from being added.
-    if (!trimmedTitle) {
-      return;
-    }
-
-    const newTodo = {
-      id: Date.now(),
-      title: trimmedTitle,
-      isCompleted: false,
-    };
-
-    // Add the newest todo to the top of the list.
-    setTodoList((previousTodoList) => [newTodo, ...previousTodoList]);
-  }
-
-  function completeTodo(id) {
-    // Mark the selected todo as completed.
-    setTodoList((previousTodoList) =>
-      previousTodoList.map((todo) =>
-        todo.id === id ? { ...todo, isCompleted: true } : todo
-      )
-    );
-  }
-
-  function updateTodo(editedTodo) {
-    // Replace only the todo that matches the edited todo's id.
-    setTodoList((previousTodoList) =>
-      previousTodoList.map((todo) =>
-        todo.id === editedTodo.id ? { ...editedTodo } : todo
-      )
-    );
-  }
+  // Authentication state is owned by App because it controls access to todos.
+  const [email, setEmail] = useState('');
+  const [token, setToken] = useState('');
 
   return (
     <div>
-      <h1>My Todos</h1>
-
-      <TodoForm onAddTodo={addTodo} />
-
-      <TodoList
-        todoList={todoList}
-        onCompleteTodo={completeTodo}
-        onUpdateTodo={updateTodo}
+      <Header
+        email={email}
+        token={token}
+        onSetEmail={setEmail}
+        onSetToken={setToken}
       />
+
+      {token ? (
+        <TodosPage token={token} />
+      ) : (
+        <Logon onSetEmail={setEmail} onSetToken={setToken} />
+      )}
     </div>
   );
 }

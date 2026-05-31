@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import TextInputWithLabel from '../shared/TextInputWithLabel';
-import { isValidTodoTitle } from '../utils/todoValidation';
+import TextInputWithLabel from '../../shared/TextInputWithLabel';
+import { isValidTodoTitle } from '../../utils/todoValidation';
 
 function TodoForm({ onAddTodo }) {
-  // Local state makes this a controlled form component.
+  // Local state keeps the input controlled.
   const [workingTodoTitle, setWorkingTodoTitle] = useState('');
 
   function handleAddTodo(event) {
@@ -11,14 +11,13 @@ function TodoForm({ onAddTodo }) {
 
     const trimmedTitle = workingTodoTitle.trim();
 
-    // Do not submit empty or whitespace-only todos.
     if (!isValidTodoTitle(trimmedTitle)) {
       return;
     }
 
     onAddTodo(trimmedTitle);
 
-    // Clear the form after a successful submission.
+    // Clear the form immediately after a valid submit.
     setWorkingTodoTitle('');
   }
 
