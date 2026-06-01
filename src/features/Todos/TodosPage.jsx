@@ -3,6 +3,7 @@ import TodoForm from './TodoForm';
 import TodoList from './TodoList/TodoList';
 import { isValidTodoTitle } from '../../utils/todoValidation';
 
+// This page is accessible only after authentication, so it receives the auth token as a prop.
 /**
  * Returns the task object from different possible API response shapes.
  * This makes the component safer if the API returns { task: {...} } or {...}.
@@ -158,6 +159,7 @@ function TodosPage({ token }) {
         credentials: 'include',
         body: JSON.stringify({
           isCompleted: true,
+           createdAt: originalTodo.createdAt,
         }),
       });
 
@@ -223,8 +225,10 @@ function TodosPage({ token }) {
         body: JSON.stringify({
           title: updatedTodo.title,
           isCompleted: updatedTodo.isCompleted,
+          createdAt: originalTodo.createdAt,
+                    
         }),
-      });
+      }); 
 
       if (response.status === 401) {
         throw new Error('Unauthorized. Please log on again.');
