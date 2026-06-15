@@ -159,9 +159,10 @@ function TodosPage({ token }) {
         credentials: 'include',
         body: JSON.stringify({
           isCompleted: true,
-           createdAt: originalTodo.createdAt,
+          //When you send a PATCH request, the API only wants fields that are being updated. createdAt: originalTodo.createdAt which is a system-generated field and should not be modified. The server likely rejects or ignores updates when createdAt is included.
+          //createdAt: originalTodo.createdAt,
         }),
-      });
+      });git 
 
       if (response.status === 401) {
         throw new Error('Unauthorized. Please log on again.');
@@ -225,7 +226,6 @@ function TodosPage({ token }) {
         body: JSON.stringify({
           title: updatedTodo.title,
           isCompleted: updatedTodo.isCompleted,
-          createdAt: originalTodo.createdAt,
                     
         }),
       }); 
