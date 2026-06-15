@@ -11,6 +11,7 @@ function TodoForm({ onAddTodo }) {
 
     if (!trimmedTitle) {
       return;
+   
     }
 
     onAddTodo(trimmedTitle);
