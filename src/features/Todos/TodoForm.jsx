@@ -13,6 +13,7 @@ function TodoForm({ onAddTodo }) {
 
     if (!isValidTodoTitle(trimmedTitle)) {
       return;
+   
     }
 
     onAddTodo(trimmedTitle);
