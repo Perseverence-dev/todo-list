@@ -1,31 +1,43 @@
 import './App.css';
-import { useState } from 'react'; // useState lets us track data that changes over time
+import { useState } from 'react';
 import TodoList from './TodoList';
 import TodoForm from './TodoForm';
 
-//Week-4 Homework copy
 function App() {
-  
-  //Store a list of todos in state. We will add to this list when the user submits a new todo from the form. We will also pass this list down to the TodoList component so it can display the todos.
+  // Store all todos in state.
   const [todoList, setTodoList] = useState([]);
 
   function addTodo(todoTitle) {
+    const trimmedTitle = todoTitle.trim();
+
+    // Guard against empty submissions.
+    if (!trimmedTitle) {
+      return;
+    }
+
     const newTodo = {
       id: Date.now(),
-      title: todoTitle,
+      title: trimmedTitle,
+      isCompleted: false,
     };
 
-    // use the previous state to build the new array. This is important because state updates are asynchronous, and if we were to use the current value of todoList directly, it might not reflect the most recent changes. By using a function that takes the previous state as an argument, we ensure that we are working with the most up-to-date version of the todo list when adding a new todo.
-    setTodoList((previous) => [newTodo, ...previous]);
+    // Functional updates are safer when the new state depends on previous state.
+    setTodoList((previousTodoList) => [newTodo, ...previousTodoList]);
+  }
+
+  function completeTodo(id) {
+    setTodoList((previousTodoList) =>
+      previousTodoList.map((todo) =>
+        todo.id === id ? { ...todo, isCompleted: true } : todo
+      )
+    );
   }
 
   return (
     <div>
       <h1>My Todos</h1>
-
       <TodoForm onAddTodo={addTodo} />
-
-      <TodoList todoList={todoList} />      
+      <TodoList todoList={todoList} onCompleteTodo={completeTodo} />
     </div>
   );
 }
