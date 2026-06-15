@@ -14,6 +14,7 @@ function TodoForm({ onAddTodo }) {
     // Do not submit empty or whitespace-only todos.
     if (!isValidTodoTitle(trimmedTitle)) {
       return;
+   
     }
 
     onAddTodo(trimmedTitle);
