@@ -1,48 +1,50 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import TodoForm from './TodoForm';
 import TodoList from './TodoList/TodoList';
 import { isValidTodoTitle } from '../../utils/todoValidation';
 import SortBy from '../../shared/SortBy';
 import FilterInput from '../../shared/FilterInput';
 import useDebounce from '../../utils/useDebounce';
+import {
+  TODO_ACTIONS,
+  initialTodoState,
+  todoReducer,
+} from '../../reducers/todoReducer';
+import { useAuth } from '../../contexts/AuthContext';
+
+// Week 9: Dispatch actions describe state changes instead of directly mutating state.
 
 /**
  * Returns the task object from different possible API response shapes.
- * This makes the component safer if the API returns { task: {...} } or {...}.
  */
 function getTaskFromResponse(data) {
   return data.task || data;
 }
 
-/**
- * TodosPage owns all todo-related state and API operations.
- * Lesson 8 adds server-side sorting, debounced search, useCallback,
- * cache invalidation, and filter-specific error recovery.
- */
-function TodosPage({ token }) {
-  const [todoList, setTodoList] = useState([]);
-  const [error, setError] = useState('');
-  const [filterError, setFilterError] = useState('');
-  const [isTodoListLoading, setIsTodoListLoading] = useState(false);
+function TodosPage() {
+  const { token } = useAuth();
 
-  // Lesson 8: These values are sent to the API so sorting happens server-side.
-  const [sortBy, setSortBy] = useState('creationDate');
-  const [sortDirection, setSortDirection] = useState('desc');
+  // Week 9: useReducer centralizes all related todo state updates in one predictable reducer.
+  const [state, dispatch] = useReducer(todoReducer, initialTodoState);
 
-  // Lesson 8: filterTerm updates immediately, but debouncedFilterTerm updates after 300ms.
-  const [filterTerm, setFilterTerm] = useState('');
+  const {
+    todoList,
+    error,
+    filterError,
+    isTodoListLoading,
+    sortBy,
+    sortDirection,
+    filterTerm,
+    dataVersion,
+  } = state;
+
   const debouncedFilterTerm = useDebounce(filterTerm, 300);
 
-  // Lesson 8: dataVersion helps child components know when memoized todo data should refresh.
-  const [dataVersion, setDataVersion] = useState(0);
-
-  // Lesson 8: useCallback keeps this function stable and uses functional state update.
-  const invalidateCache = useCallback(() => {
-    setDataVersion((previousVersion) => previousVersion + 1);
-  }, []);
-
   function handleFilterChange(newFilterTerm) {
-    setFilterTerm(newFilterTerm);
+    dispatch({
+      type: TODO_ACTIONS.SET_FILTER,
+      payload: { filterTerm: newFilterTerm },
+    });
   }
 
   const fetchTodos = useCallback(async () => {
@@ -50,11 +52,9 @@ function TodosPage({ token }) {
       return;
     }
 
-    try {
-      setIsTodoListLoading(true);
-      setError('');
+    dispatch({ type: TODO_ACTIONS.FETCH_START });
 
-      // Lesson 8: URLSearchParams safely builds the query string for sort/search.
+    try {
       const paramsObject = {
         sortBy,
         sortDirection,
@@ -84,21 +84,25 @@ function TodosPage({ token }) {
 
       const data = await response.json();
 
-      setTodoList(data.tasks || []);
-      setFilterError('');
+      dispatch({
+        type: TODO_ACTIONS.FETCH_SUCCESS,
+        payload: { todoList: data.tasks || [] },
+      });
     } catch (error) {
-      // Lesson 8: show a separate recovery path for sort/search errors.
-      if (
+      const isFilterRequest =
         debouncedFilterTerm ||
         sortBy !== 'creationDate' ||
-        sortDirection !== 'desc'
-      ) {
-        setFilterError(`Error filtering/sorting todos: ${error.message}`);
-      } else {
-        setError(`Error fetching todos: ${error.message}`);
-      }
-    } finally {
-      setIsTodoListLoading(false);
+        sortDirection !== 'desc';
+
+      dispatch({
+        type: TODO_ACTIONS.FETCH_ERROR,
+        payload: {
+          message: isFilterRequest
+            ? `Error filtering/sorting todos: ${error.message}`
+            : `Error fetching todos: ${error.message}`,
+          isFilterError: Boolean(isFilterRequest),
+        },
+      });
     }
   }, [token, sortBy, sortDirection, debouncedFilterTerm]);
 
@@ -119,8 +123,10 @@ function TodosPage({ token }) {
       isCompleted: false,
     };
 
-    setError('');
-    setTodoList((previousTodoList) => [temporaryTodo, ...previousTodoList]);
+    dispatch({
+      type: TODO_ACTIONS.ADD_TODO_START,
+      payload: { temporaryTodo },
+    });
 
     try {
       const response = await fetch('/api/tasks', {
@@ -147,19 +153,21 @@ function TodosPage({ token }) {
       const data = await response.json();
       const savedTodo = getTaskFromResponse(data);
 
-      setTodoList((previousTodoList) =>
-        previousTodoList.map((todo) =>
-          todo.id === temporaryTodo.id ? savedTodo : todo
-        )
-      );
-
-      // Lesson 8: mutation succeeded, so refresh memoized todo calculations.
-      invalidateCache();
+      dispatch({
+        type: TODO_ACTIONS.ADD_TODO_SUCCESS,
+        payload: {
+          temporaryId: temporaryTodo.id,
+          savedTodo,
+        },
+      });
     } catch (error) {
-      setTodoList((previousTodoList) =>
-        previousTodoList.filter((todo) => todo.id !== temporaryTodo.id)
-      );
-      setError(error.message);
+      dispatch({
+        type: TODO_ACTIONS.ADD_TODO_ERROR,
+        payload: {
+          temporaryId: temporaryTodo.id,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -170,16 +178,10 @@ function TodosPage({ token }) {
       return;
     }
 
-    const completedTodo = {
-      ...originalTodo,
-      isCompleted: true,
-    };
-
-    setError('');
-
-    setTodoList((previousTodoList) =>
-      previousTodoList.map((todo) => (todo.id === id ? completedTodo : todo))
-    );
+    dispatch({
+      type: TODO_ACTIONS.COMPLETE_TODO_START,
+      payload: { id },
+    });
 
     try {
       const response = await fetch(`/api/tasks/${id}`, {
@@ -190,7 +192,6 @@ function TodosPage({ token }) {
         },
         credentials: 'include',
         body: JSON.stringify({
-          // Only send the field being updated. Do not send createdAt.
           isCompleted: true,
         }),
       });
@@ -206,17 +207,18 @@ function TodosPage({ token }) {
       const data = await response.json();
       const savedTodo = getTaskFromResponse(data);
 
-      setTodoList((previousTodoList) =>
-        previousTodoList.map((todo) => (todo.id === id ? savedTodo : todo))
-      );
-
-      // Lesson 8: mutation succeeded, so refresh memoized todo calculations.
-      invalidateCache();
+      dispatch({
+        type: TODO_ACTIONS.COMPLETE_TODO_SUCCESS,
+        payload: { savedTodo },
+      });
     } catch (error) {
-      setTodoList((previousTodoList) =>
-        previousTodoList.map((todo) => (todo.id === id ? originalTodo : todo))
-      );
-      setError(error.message);
+      dispatch({
+        type: TODO_ACTIONS.COMPLETE_TODO_ERROR,
+        payload: {
+          originalTodo,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -238,13 +240,10 @@ function TodosPage({ token }) {
       title: trimmedTitle,
     };
 
-    setError('');
-
-    setTodoList((previousTodoList) =>
-      previousTodoList.map((todo) =>
-        todo.id === updatedTodo.id ? updatedTodo : todo
-      )
-    );
+    dispatch({
+      type: TODO_ACTIONS.UPDATE_TODO_START,
+      payload: { updatedTodo },
+    });
 
     try {
       const response = await fetch(`/api/tasks/${updatedTodo.id}`, {
@@ -255,7 +254,6 @@ function TodosPage({ token }) {
         },
         credentials: 'include',
         body: JSON.stringify({
-          // Send editable fields only. createdAt is generated by the server.
           title: updatedTodo.title,
           isCompleted: updatedTodo.isCompleted,
         }),
@@ -272,21 +270,18 @@ function TodosPage({ token }) {
       const data = await response.json();
       const savedTodo = getTaskFromResponse(data);
 
-      setTodoList((previousTodoList) =>
-        previousTodoList.map((todo) =>
-          todo.id === updatedTodo.id ? savedTodo : todo
-        )
-      );
-
-      // Lesson 8: mutation succeeded, so refresh memoized todo calculations.
-      invalidateCache();
+      dispatch({
+        type: TODO_ACTIONS.UPDATE_TODO_SUCCESS,
+        payload: { savedTodo },
+      });
     } catch (error) {
-      setTodoList((previousTodoList) =>
-        previousTodoList.map((todo) =>
-          todo.id === originalTodo.id ? originalTodo : todo
-        )
-      );
-      setError(error.message);
+      dispatch({
+        type: TODO_ACTIONS.UPDATE_TODO_ERROR,
+        payload: {
+          originalTodo,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -295,7 +290,10 @@ function TodosPage({ token }) {
       {error && (
         <section>
           <p>{error}</p>
-          <button type="button" onClick={() => setError('')}>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_ERROR })}
+          >
             Clear Error
           </button>
         </section>
@@ -305,18 +303,18 @@ function TodosPage({ token }) {
         <section>
           <p>{filterError}</p>
 
-          <button type="button" onClick={() => setFilterError('')}>
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({ type: TODO_ACTIONS.CLEAR_FILTER_ERROR })
+            }
+          >
             Clear Filter Error
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              setFilterTerm('');
-              setSortBy('creationDate');
-              setSortDirection('desc');
-              setFilterError('');
-            }}
+            onClick={() => dispatch({ type: TODO_ACTIONS.RESET_FILTERS })}
           >
             Reset Filters
           </button>
@@ -328,8 +326,18 @@ function TodosPage({ token }) {
       <SortBy
         sortBy={sortBy}
         sortDirection={sortDirection}
-        onSortByChange={setSortBy}
-        onSortDirectionChange={setSortDirection}
+        onSortByChange={(newSortBy) =>
+          dispatch({
+            type: TODO_ACTIONS.SET_SORT,
+            payload: { sortBy: newSortBy, sortDirection },
+          })
+        }
+        onSortDirectionChange={(newSortDirection) =>
+          dispatch({
+            type: TODO_ACTIONS.SET_SORT,
+            payload: { sortBy, sortDirection: newSortDirection },
+          })
+        }
       />
 
       <FilterInput
