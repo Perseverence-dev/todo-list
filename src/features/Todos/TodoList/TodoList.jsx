@@ -1,16 +1,22 @@
+import { useMemo } from 'react';
 import TodoListItem from './TodoListItem';
 
-function TodoList({ todoList, onCompleteTodo, onUpdateTodo }) {
-  // Only show todos that are not completed.
-  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted);
+function TodoList({ todoList, dataVersion, onCompleteTodo, onUpdateTodo }) {
+  const filteredTodoList = useMemo(() => {
+    // Lesson 8: useMemo avoids recalculating this list unless todos or dataVersion change.
+    return {
+      version: dataVersion,
+      todos: todoList.filter((todo) => !todo.isCompleted),
+    };
+  }, [todoList, dataVersion]);
 
-  if (filteredTodoList.length === 0) {
+  if (filteredTodoList.todos.length === 0) {
     return <p>Add todo above to get started</p>;
   }
 
   return (
     <ul>
-      {filteredTodoList.map((todo) => (
+      {filteredTodoList.todos.map((todo) => (
         <TodoListItem
           key={todo.id}
           todo={todo}
