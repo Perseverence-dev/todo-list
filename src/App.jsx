@@ -9,22 +9,17 @@ import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 import RequireAuth from './components/RequireAuth';
 
-// Week 10: conditional rendering replaced with client-side routing.
 function App() {
   return (
-    <>
-      {/* Header (with navigation) renders outside <Routes> so it persists
-          across every page. */}
+    <div className="app">
       <Header />
 
-      <Routes>
-        {/* Public routes — reachable without authentication. */}
+      <main className="container">
+        <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected routes — RequireAuth gates access and preserves the
-            user's intended destination for post-login redirect. */}
         <Route
           path="/todos"
           element={
@@ -42,11 +37,24 @@ function App() {
           }
         />
 
-        {/* Catch-all must be last: <Routes> renders the first match, so an
-            earlier "*" would shadow every other route. */}
+        {/* Wildcard stays last so it only matches unknown URLs. */}
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </>
+        </Routes>
+      </main>
+
+      <footer className="appFooter">
+        <p>
+          Todo List · built with React, React Router &amp; Vite ·{' '}
+          <a
+            href="https://github.com/Perseverence-Dev/todo-list"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View source
+          </a>
+        </p>
+      </footer>
+    </div>
   );
 }
 

@@ -1,34 +1,18 @@
 import { NavLink } from 'react-router';
 import { useAuth } from '../contexts/useAuth';
+import styles from './Navigation.module.css';
 
-// NavLink automatically calls this style callback with an { isActive } flag
-// for the link whose `to` matches the current URL, letting us highlight the
-// active route without manually tracking the current page.
-const navLinkStyle = ({ isActive }) => ({
-  fontWeight: isActive ? 'bold' : 'normal',
-  textDecoration: isActive ? 'underline' : 'none',
-});
+const navLinkClass = ({ isActive }) =>
+  isActive ? `${styles.link} ${styles.active}` : styles.link;
 
-/**
- * Primary navigation. Shows different links depending on auth status and
- * highlights the active route automatically via NavLink.
- */
 function Navigation() {
   const { isAuthenticated } = useAuth();
 
   return (
     <nav>
-      <ul
-        style={{
-          listStyle: 'none',
-          display: 'flex',
-          gap: '1rem',
-          padding: 0,
-        }}
-      >
-        {/* Always available */}
+      <ul className={styles.list}>
         <li>
-          <NavLink to="/about" style={navLinkStyle}>
+          <NavLink to="/about" className={navLinkClass}>
             About
           </NavLink>
         </li>
@@ -36,19 +20,19 @@ function Navigation() {
         {isAuthenticated ? (
           <>
             <li>
-              <NavLink to="/todos" style={navLinkStyle}>
+              <NavLink to="/todos" className={navLinkClass}>
                 Todos
               </NavLink>
             </li>
             <li>
-              <NavLink to="/profile" style={navLinkStyle}>
+              <NavLink to="/profile" className={navLinkClass}>
                 Profile
               </NavLink>
             </li>
           </>
         ) : (
           <li>
-            <NavLink to="/login" style={navLinkStyle}>
+            <NavLink to="/login" className={navLinkClass}>
               Login
             </NavLink>
           </li>

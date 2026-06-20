@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import TodoListItem from './TodoListItem';
+import styles from './TodoList.module.css';
 
 function TodoList({
   todoList,
@@ -9,8 +10,6 @@ function TodoList({
   statusFilter = 'all',
 }) {
   const filteredTodoList = useMemo(() => {
-    // Lesson 8: useMemo avoids recalculating this list unless its inputs change.
-    // Week 10: the visible set now depends on the URL-driven status filter.
     let todos;
     switch (statusFilter) {
       case 'completed':
@@ -31,7 +30,6 @@ function TodoList({
     };
   }, [todoList, dataVersion, statusFilter]);
 
-  // Context-aware empty message so the user understands why the list is empty.
   const getEmptyMessage = () => {
     switch (statusFilter) {
       case 'completed':
@@ -45,11 +43,11 @@ function TodoList({
   };
 
   if (filteredTodoList.todos.length === 0) {
-    return <p>{getEmptyMessage()}</p>;
+    return <p className={styles.empty}>{getEmptyMessage()}</p>;
   }
 
   return (
-    <ul>
+    <ul className={styles.list}>
       {filteredTodoList.todos.map((todo) => (
         <TodoListItem
           key={todo.id}

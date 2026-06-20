@@ -1,17 +1,15 @@
 import { Link } from 'react-router';
+import styles from './Page.module.css';
 
-/**
- * Catch-all 404 page for unmatched routes. Gives the user friendly recovery
- * links instead of a blank screen.
- */
 function NotFoundPage() {
   return (
-    <main className="notFound">
-      <h2>404: Page Not Found</h2>
-      <p>Sorry, the page you&rsquo;re looking for doesn&rsquo;t exist.</p>
+    <section className={styles.card}>
+      <h2 className={styles.title}>404: Page Not Found</h2>
+      <p className={styles.muted}>
+        Sorry, the page you&rsquo;re looking for doesn&rsquo;t exist.
+      </p>
 
-      {/* Link (not <a>) keeps navigation client-side — no full page reload. */}
-      <ul>
+      <ul className={styles.links}>
         <li>
           <Link to="/">Home</Link>
         </li>
@@ -22,7 +20,7 @@ function NotFoundPage() {
           <Link to="/todos">Todos</Link>
         </li>
       </ul>
-    </main>
+    </section>
   );
 }
 

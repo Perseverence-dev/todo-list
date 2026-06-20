@@ -1,0 +1,7 @@
+/* Field group: stacks the label above its input and grows to fill a flex row. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}

@@ -1,4 +1,3 @@
-// Week 9: useReducer centralizes all related todo state updates in one predictable reducer.
 export const TODO_ACTIONS = {
   FETCH_START: 'FETCH_START',
   FETCH_SUCCESS: 'FETCH_SUCCESS',

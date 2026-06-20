@@ -7,8 +7,6 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* BrowserRouter must wrap AuthProvider and App so the routing and auth
-        contexts are available everywhere in the tree. */}
     <BrowserRouter>
       <AuthProvider>
         <App />

@@ -13,13 +13,9 @@ import {
   todoReducer,
 } from '../reducers/todoReducer';
 import { useAuth } from '../contexts/useAuth';
+import styles from './TodosPage.module.css';
 
-// Week 9: Dispatch actions describe state changes instead of directly mutating state.
-// Week 10: moved into /pages and reads the status filter from the URL.
-
-/**
- * Returns the task object from different possible API response shapes.
- */
+// Normalizes the task object across the API's response shapes.
 function getTaskFromResponse(data) {
   return data.task || data;
 }
@@ -27,11 +23,10 @@ function getTaskFromResponse(data) {
 function TodosPage() {
   const { token } = useAuth();
 
-  // Week 10: the status filter lives in the URL so it's shareable/bookmarkable.
+  // Status filter is read from the URL so the view stays shareable.
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get('status') || 'all';
 
-  // Week 9: useReducer centralizes all related todo state updates in one predictable reducer.
   const [state, dispatch] = useReducer(todoReducer, initialTodoState);
 
   const {
@@ -293,67 +288,75 @@ function TodosPage() {
   }
 
   return (
-    <main>
+    <section className={styles.page}>
       {error && (
-        <section>
+        <div className={styles.alert} role="alert">
           <p>{error}</p>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_ERROR })}
-          >
-            Clear Error
-          </button>
-        </section>
+          <div className={styles.alertActions}>
+            <button
+              type="button"
+              className={styles.alertButton}
+              onClick={() => dispatch({ type: TODO_ACTIONS.CLEAR_ERROR })}
+            >
+              Clear Error
+            </button>
+          </div>
+        </div>
       )}
 
       {filterError && (
-        <section>
+        <div className={styles.alert} role="alert">
           <p>{filterError}</p>
 
-          <button
-            type="button"
-            onClick={() =>
-              dispatch({ type: TODO_ACTIONS.CLEAR_FILTER_ERROR })
-            }
-          >
-            Clear Filter Error
-          </button>
+          <div className={styles.alertActions}>
+            <button
+              type="button"
+              className={styles.alertButton}
+              onClick={() =>
+                dispatch({ type: TODO_ACTIONS.CLEAR_FILTER_ERROR })
+              }
+            >
+              Clear Filter Error
+            </button>
 
-          <button
-            type="button"
-            onClick={() => dispatch({ type: TODO_ACTIONS.RESET_FILTERS })}
-          >
-            Reset Filters
-          </button>
-        </section>
+            <button
+              type="button"
+              className={styles.alertButton}
+              onClick={() => dispatch({ type: TODO_ACTIONS.RESET_FILTERS })}
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
       )}
 
-      {isTodoListLoading && <p>Loading todos...</p>}
+      {isTodoListLoading && <p className={styles.loading}>Loading todos…</p>}
 
-      <SortBy
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSortByChange={(newSortBy) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: { sortBy: newSortBy, sortDirection },
-          })
-        }
-        onSortDirectionChange={(newSortDirection) =>
-          dispatch({
-            type: TODO_ACTIONS.SET_SORT,
-            payload: { sortBy, sortDirection: newSortDirection },
-          })
-        }
-      />
+      <section className={styles.controls}>
+        <SortBy
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortByChange={(newSortBy) =>
+            dispatch({
+              type: TODO_ACTIONS.SET_SORT,
+              payload: { sortBy: newSortBy, sortDirection },
+            })
+          }
+          onSortDirectionChange={(newSortDirection) =>
+            dispatch({
+              type: TODO_ACTIONS.SET_SORT,
+              payload: { sortBy, sortDirection: newSortDirection },
+            })
+          }
+        />
 
-      {/* Week 10: URL-backed status filter (all / active / completed). */}
-      <StatusFilter />
+        <StatusFilter />
 
-      <FilterInput
-        filterTerm={filterTerm}
-        onFilterChange={handleFilterChange}
-      />
+        <FilterInput
+          filterTerm={filterTerm}
+          onFilterChange={handleFilterChange}
+        />
+      </section>
 
       <TodoForm onAddTodo={addTodo} />
 
@@ -364,7 +367,7 @@ function TodosPage() {
         onUpdateTodo={updateTodo}
         statusFilter={statusFilter}
       />
-    </main>
+    </section>
   );
 }
 

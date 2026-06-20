@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import TextInputWithLabel from '../../shared/TextInputWithLabel';
-import { isValidTodoTitle } from '../../utils/todoValidation';
+import {
+  isValidTodoTitle,
+  MAX_TODO_TITLE_LENGTH,
+} from '../../utils/todoValidation';
+import { sanitizeText } from '../../utils/sanitize';
+import styles from './TodoForm.module.css';
 
 function TodoForm({ onAddTodo }) {
-  // Local state keeps the input controlled.
   const [workingTodoTitle, setWorkingTodoTitle] = useState('');
 
   function handleAddTodo(event) {
@@ -13,26 +17,30 @@ function TodoForm({ onAddTodo }) {
 
     if (!isValidTodoTitle(trimmedTitle)) {
       return;
-   
     }
 
-    onAddTodo(trimmedTitle);
+    // Strip any markup before the title leaves the form.
+    onAddTodo(sanitizeText(trimmedTitle));
 
-    // Clear the form immediately after a valid submit.
     setWorkingTodoTitle('');
   }
 
   return (
-    <form onSubmit={handleAddTodo}>
+    <form className={styles.form} onSubmit={handleAddTodo}>
       <TextInputWithLabel
         elementId="todoTitle"
         labelText="Todo"
         value={workingTodoTitle}
         onChange={(event) => setWorkingTodoTitle(event.target.value)}
         placeholder="Todo text"
+        maxLength={MAX_TODO_TITLE_LENGTH}
       />
 
-      <button type="submit" disabled={!isValidTodoTitle(workingTodoTitle)}>
+      <button
+        type="submit"
+        className={styles.add}
+        disabled={!isValidTodoTitle(workingTodoTitle)}
+      >
         Add Todo
       </button>
     </form>

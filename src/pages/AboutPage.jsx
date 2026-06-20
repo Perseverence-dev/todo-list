@@ -1,35 +1,33 @@
-/**
- * Public, bookmarkable informational page about the app.
- * Accessible whether or not the user is authenticated.
- */
+import styles from './Page.module.css';
+
 function AboutPage() {
   return (
-    <main className="about">
-      <h2>About This App</h2>
-      <p>
+    <section className={styles.card}>
+      <h2 className={styles.title}>About This App</h2>
+      <p className={styles.muted}>
         A todo manager built for the Code the Dream React course to practice
         modern React patterns and client-side routing.
       </p>
 
-      <section>
+      <div className={styles.section}>
         <h3>Features</h3>
-        <ul>
-          <li>Create, complete, and edit todos with a pessimistic UI</li>
+        <ul className={styles.list}>
+          <li>Create, complete, and edit todos with a pessimistic UI(wait-for-server updates)</li>
           <li>Sort, text-filter, and status-filter todos</li>
           <li>Shareable, bookmarkable status filters stored in the URL</li>
           <li>Authentication-protected pages with redirect preservation</li>
         </ul>
-      </section>
+      </div>
 
-      <section>
+      <div className={styles.section}>
         <h3>Built With</h3>
-        <ul>
+        <ul className={styles.list}>
           <li>React</li>
           <li>React Router v7</li>
           <li>Vite</li>
         </ul>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
 

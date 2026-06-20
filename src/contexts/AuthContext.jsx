@@ -1,11 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { AuthContext } from './authContextInstance';
 
-// Week 9: AuthContext eliminates authentication prop drilling.
-// The context instance lives in ./authContextInstance and the consuming hook in
-// ./useAuth, so this file exports only the provider component — which keeps it
-// compatible with Vite's React fast refresh.
-
 export function AuthProvider({ children }) {
   const [email, setEmail] = useState(
     () => sessionStorage.getItem('todoAppEmail') || ''

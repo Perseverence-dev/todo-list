@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/useAuth';
+import styles from './Page.module.css';
 
-/**
- * Profile page: shows the signed-in user and live todo statistics fetched
- * from the API (total / completed / active and a completion percentage).
- */
 function ProfilePage() {
-  // In this app's AuthContext the `email` field actually holds the user's
-  // display name (set from the API's `data.name`), so alias it for clarity.
+  // `email` holds the display name returned by the API.
   const { email: userName, token } = useAuth();
 
   const [todoStats, setTodoStats] = useState({
@@ -26,7 +22,6 @@ function ProfilePage() {
         setLoading(true);
         setError('');
 
-        // Relative path so Vite's dev proxy forwards the request to the API.
         const response = await fetch('/api/tasks', {
           method: 'GET',
           headers: { 'X-CSRF-TOKEN': token },
@@ -40,7 +35,7 @@ function ProfilePage() {
           throw new Error('Failed to fetch todos');
         }
 
-        // This API wraps the list in { tasks: [...] }, not a bare array.
+        // API returns { tasks: [...] }.
         const data = await response.json();
         const todos = data.tasks || [];
 
@@ -59,38 +54,52 @@ function ProfilePage() {
     fetchTodoStats();
   }, [token]);
 
-  // Guard against divide-by-zero before computing a percentage.
   const completionRate =
     todoStats.total > 0
       ? Math.round((todoStats.completed / todoStats.total) * 100)
       : 0;
 
   return (
-    <main className="profile">
-      <h2>Your Profile</h2>
+    <section className={styles.card}>
+      <h2 className={styles.title}>Your Profile</h2>
 
-      <section>
+      <div className={styles.section}>
         <h3>Account</h3>
         <p>Name: {userName}</p>
-        <p>Status: Logged in</p>
-      </section>
+        <p className={styles.muted}>Status: Logged in</p>
+      </div>
 
-      <section>
+      <div className={styles.section}>
         <h3>Todo Statistics</h3>
 
-        {loading && <p>Loading statistics…</p>}
-        {error && <p role="alert">{error}</p>}
+        {loading && <p className={styles.muted}>Loading statistics…</p>}
+        {error && <p className={styles.error}>{error}</p>}
 
         {!loading && !error && (
           <>
-            <p>Total: {todoStats.total}</p>
-            <p>Completed: {todoStats.completed}</p>
-            <p>Active: {todoStats.active}</p>
-            {todoStats.total > 0 && <p>Completion: {completionRate}%</p>}
+            <div className={styles.stats}>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>{todoStats.total}</div>
+                <div className={styles.statLabel}>Total</div>
+              </div>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>{todoStats.completed}</div>
+                <div className={styles.statLabel}>Completed</div>
+              </div>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>{todoStats.active}</div>
+                <div className={styles.statLabel}>Active</div>
+              </div>
+            </div>
+            {todoStats.total > 0 && (
+              <p className={styles.muted}>
+                Completion: {completionRate}%
+              </p>
+            )}
           </>
         )}
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
 

@@ -1,20 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../contexts/useAuth';
+import styles from './Page.module.css';
 
-/**
- * LoginPage replaces the old Logon feature component.
- * It keeps the original pessimistic-UI login form and adds React Router
- * redirect handling: after a successful login the user is sent to the page
- * they originally tried to reach (preserved by RequireAuth), or /todos.
- */
 function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // RequireAuth stashes the blocked destination in location.state.from.
-  // Fall back to /todos for a normal (non-redirected) login.
+  // Where to return after login — set by RequireAuth, defaults to /todos.
   const from = location.state?.from?.pathname || '/todos';
 
   const [email, setEmail] = useState('');
@@ -22,9 +16,6 @@ function LoginPage() {
   const [authError, setAuthError] = useState('');
   const [isLoggingOn, setIsLoggingOn] = useState(false);
 
-  // Redirect whenever the user is authenticated. This covers both "already
-  // logged in and visited /login" and "just logged in", keeping the navigation
-  // logic in a single place.
   useEffect(() => {
     if (isAuthenticated) {
       navigate(from, { replace: true });
@@ -43,37 +34,40 @@ function LoginPage() {
       if (!result.success) {
         setAuthError(result.error);
       }
-      // On success, the useEffect above performs the redirect.
     } finally {
       setIsLoggingOn(false);
     }
   }
 
   return (
-    <section>
-      <h2>Log On</h2>
+    <section className={styles.card}>
+      <h2 className={styles.title}>Log On</h2>
 
-      {authError && <p role="alert">{authError}</p>}
+      {authError && <p className={styles.error}>{authError}</p>}
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.field}>
           <label htmlFor="logonEmail">Email</label>
           <input
             id="logonEmail"
             type="email"
             value={email}
             required
+            maxLength={254}
+            autoComplete="email"
             onChange={(event) => setEmail(event.target.value)}
           />
         </div>
 
-        <div>
+        <div className={styles.field}>
           <label htmlFor="logonPassword">Password</label>
           <input
             id="logonPassword"
             type="password"
             value={password}
             required
+            maxLength={128}
+            autoComplete="current-password"
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
