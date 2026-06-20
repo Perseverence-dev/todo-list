@@ -1,7 +1,7 @@
-/**
- * Checks whether a todo title has real content.
- * Empty strings and whitespace-only strings are invalid.
- */
+export const MAX_TODO_TITLE_LENGTH = 200;
+
+// A title needs non-whitespace content and must stay within the length limit.
 export function isValidTodoTitle(title) {
-  return title.trim() !== '';
+  const trimmed = title.trim();
+  return trimmed !== '' && trimmed.length <= MAX_TODO_TITLE_LENGTH;
 }

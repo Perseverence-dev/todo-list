@@ -1,26 +1,37 @@
-/**
- * Shared application header.
- * It shows the app title and basic authentication status.
- */
-function Header({ email, token, onSetEmail, onSetToken }) {
-  function handleLogOut() {
-    // Clear authentication state in App.
-    onSetEmail('');
-    onSetToken('');
+import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/useAuth';
+import Navigation from './Navigation';
+import styles from './Header.module.css';
+
+function Header() {
+  const { email, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    navigate('/login');
   }
 
   return (
-    <header>
-      <h1>Todo List</h1>
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <h1 className={styles.brand}>Todo List</h1>
 
-      {token && (
-        <div>
-          <span>Signed in as {email}</span>
-          <button type="button" onClick={handleLogOut}>
-            Log Out
-          </button>
-        </div>
-      )}
+        <Navigation />
+
+        {isAuthenticated && (
+          <div className={styles.user}>
+            <span className={styles.userName}>Signed in as {email}</span>
+            <button
+              type="button"
+              className={styles.logout}
+              onClick={handleLogout}
+            >
+              Log Out
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

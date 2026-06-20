@@ -1,16 +1,15 @@
-/**
- * Reusable text input with an associated label.
- * Used by both the add-todo form and the edit-todo form.
- */
+import styles from './TextInputWithLabel.module.css';
+
 function TextInputWithLabel({
   elementId,
   labelText,
   onChange,
   value,
   placeholder = '',
+  maxLength,
 }) {
   return (
-    <>
+    <div className={styles.field}>
       <label htmlFor={elementId}>{labelText}</label>
       <input
         type="text"
@@ -18,8 +17,9 @@ function TextInputWithLabel({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        maxLength={maxLength}
       />
-    </>
+    </div>
   );
 }
 
