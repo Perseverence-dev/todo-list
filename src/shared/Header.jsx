@@ -1,22 +1,32 @@
+import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/useAuth';
+import Navigation from './Navigation';
+
 /**
  * Shared application header.
- * It shows the app title and basic authentication status.
+ * Week 9: Header reads authentication state directly from AuthContext.
+ * Week 10: hosts the primary <Navigation /> and redirects to /login on logout.
  */
-function Header({ email, token, onSetEmail, onSetToken }) {
-  function handleLogOut() {
-    // Clear authentication state in App.
-    onSetEmail('');
-    onSetToken('');
+function Header() {
+  const { email, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // logout() clears the session; we then send the user to the login page.
+  async function handleLogout() {
+    await logout();
+    navigate('/login');
   }
 
   return (
     <header>
       <h1>Todo List</h1>
 
-      {token && (
+      <Navigation />
+
+      {isAuthenticated && (
         <div>
-          <span>Signed in as {email}</span>
-          <button type="button" onClick={handleLogOut}>
+          <span>Signed in as {email}</span>{' '}
+          <button type="button" onClick={handleLogout}>
             Log Out
           </button>
         </div>
