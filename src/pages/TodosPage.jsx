@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useReducer } from 'react';
-import TodoForm from './TodoForm';
-import TodoList from './TodoList/TodoList';
-import { isValidTodoTitle } from '../../utils/todoValidation';
-import SortBy from '../../shared/SortBy';
-import FilterInput from '../../shared/FilterInput';
-import useDebounce from '../../utils/useDebounce';
+import { useSearchParams } from 'react-router';
+import TodoForm from '../features/Todos/TodoForm';
+import TodoList from '../features/Todos/TodoList/TodoList';
+import { isValidTodoTitle } from '../utils/todoValidation';
+import SortBy from '../shared/SortBy';
+import FilterInput from '../shared/FilterInput';
+import StatusFilter from '../shared/StatusFilter';
+import useDebounce from '../utils/useDebounce';
 import {
   TODO_ACTIONS,
   initialTodoState,
   todoReducer,
-} from '../../reducers/todoReducer';
-import { useAuth } from '../../contexts/AuthContext';
+} from '../reducers/todoReducer';
+import { useAuth } from '../contexts/useAuth';
 
 // Week 9: Dispatch actions describe state changes instead of directly mutating state.
+// Week 10: moved into /pages and reads the status filter from the URL.
 
 /**
  * Returns the task object from different possible API response shapes.
@@ -23,6 +26,10 @@ function getTaskFromResponse(data) {
 
 function TodosPage() {
   const { token } = useAuth();
+
+  // Week 10: the status filter lives in the URL so it's shareable/bookmarkable.
+  const [searchParams] = useSearchParams();
+  const statusFilter = searchParams.get('status') || 'all';
 
   // Week 9: useReducer centralizes all related todo state updates in one predictable reducer.
   const [state, dispatch] = useReducer(todoReducer, initialTodoState);
@@ -340,6 +347,9 @@ function TodosPage() {
         }
       />
 
+      {/* Week 10: URL-backed status filter (all / active / completed). */}
+      <StatusFilter />
+
       <FilterInput
         filterTerm={filterTerm}
         onFilterChange={handleFilterChange}
@@ -352,6 +362,7 @@ function TodosPage() {
         dataVersion={dataVersion}
         onCompleteTodo={completeTodo}
         onUpdateTodo={updateTodo}
+        statusFilter={statusFilter}
       />
     </main>
   );

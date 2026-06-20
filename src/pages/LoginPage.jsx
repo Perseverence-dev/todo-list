@@ -1,18 +1,35 @@
-import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { useAuth } from '../contexts/useAuth';
 
 /**
- * Logon uses a pessimistic UI update.
- * Week 9: login comes from AuthContext, so this component no longer needs
- * authentication setter props from App.
+ * LoginPage replaces the old Logon feature component.
+ * It keeps the original pessimistic-UI login form and adds React Router
+ * redirect handling: after a successful login the user is sent to the page
+ * they originally tried to reach (preserved by RequireAuth), or /todos.
  */
-function Logon() {
-  const { login } = useAuth();
+function LoginPage() {
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // RequireAuth stashes the blocked destination in location.state.from.
+  // Fall back to /todos for a normal (non-redirected) login.
+  const from = location.state?.from?.pathname || '/todos';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [isLoggingOn, setIsLoggingOn] = useState(false);
+
+  // Redirect whenever the user is authenticated. This covers both "already
+  // logged in and visited /login" and "just logged in", keeping the navigation
+  // logic in a single place.
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -26,6 +43,7 @@ function Logon() {
       if (!result.success) {
         setAuthError(result.error);
       }
+      // On success, the useEffect above performs the redirect.
     } finally {
       setIsLoggingOn(false);
     }
@@ -35,7 +53,7 @@ function Logon() {
     <section>
       <h2>Log On</h2>
 
-      {authError && <p>{authError}</p>}
+      {authError && <p role="alert">{authError}</p>}
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -68,4 +86,4 @@ function Logon() {
   );
 }
 
-export default Logon;
+export default LoginPage;
